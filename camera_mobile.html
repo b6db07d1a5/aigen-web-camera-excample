@@ -28,10 +28,7 @@
 
       <!-- wrapper for button  -->
       <div class="wrap">
-        <video
-          autoplay="true"
-          style="width: 640px; border-radius: 10px"
-        ></video>
+        <video autoplay="true" style="width: 95vw; height: 80vh"></video>
 
         <div class="overlay">
           <button
@@ -55,8 +52,15 @@
         );
 
         //image resolution ***more resolution is data tranfer size
-        let width = 640;
-        let height = 480;
+
+        let viewportHeight = window.innerHeight;
+        let viewportWidth = window.innerWidth + window.innerWidth * 0.15;
+
+        // let width = 640;
+        // let height = 480;
+
+        let width = viewportWidth;
+        let height = viewportHeight;
 
         let stream = null;
 
