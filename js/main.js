@@ -5,9 +5,10 @@ let text_advise = document.querySelector("p[name='text_advise']")
 let width = 640
 let height = 480
 
+const { FR } = new AIGEN()
 //start liveness from click action
 click_liveness.addEventListener('click', async function () {
-  await faceLiveness({ camera, getSequence, postLiveness, faceTracing, finishCallback })
+  await FR.startLivenessDetection({ camera, getSequence, postLiveness, faceTracing, finishCallback })
 })
 
 let isCamera = startCamera()
@@ -55,7 +56,7 @@ function finishCallback(data) {
 
 //face tracing during video process
 function faceTracing(tracing) {
-  const faceAdvice = actions[tracing]
+  const faceAdvice = FR.actions[tracing]
 
   text_advise.innerText = faceAdvice.text
 }
