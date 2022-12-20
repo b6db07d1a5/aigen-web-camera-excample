@@ -2,14 +2,8 @@
 <html>
   <head>
     <title>Demo - Capture Photo From Webcam Using Javascript</title>
-    <meta
-      http-equiv="Content-Type"
-      content="text/html; charset=UTF-8"
-    />
-    <meta
-      name="viewport"
-      content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"
-    />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" />
     <style type="text/css">
       .wrap {
         position: relative;
@@ -19,11 +13,10 @@
         position: absolute;
         bottom: 0;
         width: 100%;
-        z-index: 25;
         text-align: center;
       }
 
-      #videoElement {
+      .videoElement {
         width: 640px;
         border-radius: 10px;
         transform: rotateY(180deg);
@@ -31,24 +24,20 @@
         -moz-transform: rotateY(180deg); /* Firefox */
       }
 
-      .mask {
-        position: absolute;
-        top: -50px; /* minus half the div size */
-        left: -50px; /* minus half the div size */
-        width: 100px; /* the div size */
-        height: 100px; /* the div size */
-        background-color: transparent;
-        border-radius: 100px; /* the div size */
-        border: 50px solid white; /* half the div size */
-        pointer-events: none; /* send mouse events beneath this layer */
+      svg {
+        width: 640px;
+        height: 480px;
+        margin: 0 auto;
+        border-radius: 10px;
       }
 
-      .stuff {
+      p {
         position: absolute;
-        width: 100px; /* the div size */
-        height: 100px; /* the div size */
-        overflow: hidden; /* hide the excess of the mask border */
-        background-color: #ccc;
+        bottom: 0;
+        margin: 15px auto;
+        width: inherit;
+        font-size: 3em;
+        color: white;
       }
     </style>
   </head>
@@ -59,31 +48,27 @@
 
       <!-- wrapper for button  -->
       <div class="wrap">
-        <video
-          id="videoElement"
-          autoplay="true"
-        ></video>
+        <video class="videoElement" autoplay="true"></video>
 
         <div class="overlay">
-          <p
-            name="text_advise"
-            style="font-size: 5em; color: white"
-          >
-            Click Start
-          </p>
+          <svg viewBox="0 0 20 15">
+            <defs>
+              <mask id="mask">
+                <rect x="0" y="0" width="100%" height="100%" fill="#fff" />
+                <circle cx="50%" cy="50%" r="5" />
+              </mask>
+            </defs>
+            <rect x="0" y="0" width="100%" height="100%" mask="url(#mask)" fill-opacity="0.7" />
+          </svg>
+
+          <p name="text_advise">Click Start</p>
         </div>
       </div>
 
-      <button
-        name="click_liveness"
-        style="height: 65px; margin-bottom: 15px; border-radius: 10px"
-      >
-        Start Liveness
-      </button>
+      <button name="click_liveness" style="height: 65px; margin-bottom: 15px; border-radius: 10px">Start Liveness</button>
     </center>
 
-    <script src="D:/Workspace/AIGen/git/aigen-face-recognition-sdk/examples/browser/aigen-sdk.js"></script>
-    <!-- <script src="https://unpkg.com/@b6db07d1a5/aigen-sdk@1.0.4/dist/aigen-sdk.js"></script> -->
+    <script src="https://unpkg.com/@b6db07d1a5/aigen-sdk@1.1.0/dist/aigen-sdk.js"></script>
     <script src="./js/fetch.js"></script>
 
     <!-- main js -->
