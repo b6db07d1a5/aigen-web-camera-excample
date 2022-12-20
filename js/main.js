@@ -5,10 +5,13 @@ let text_advise = document.querySelector("p[name='text_advise']")
 let width = 640
 let height = 480
 
+const audioNotify = new Audio('./assets/notification-sound.wav')
+
 const { FR } = new AIGEN()
+
 //start liveness from click action
 click_liveness.addEventListener('click', async function () {
-  await FR.startLivenessDetection({ camera, getSequence, postLiveness, faceTracing, finishCallback })
+  await FR.startLivenessDetection({ camera, getSequence, postLiveness, faceTracing, sequenceCallback, finishCallback })
 })
 
 let isCamera = startCamera()
@@ -52,6 +55,12 @@ async function postLiveness({ image, request_id }) {
 function finishCallback(data) {
   console.log(data)
   text_advise.innerText = 'Verify Success'
+}
+
+//sequence detected
+function sequenceCallback() {
+  console.log('next sequence')
+  audioNotify.play()
 }
 
 //face tracing during video process

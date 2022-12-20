@@ -1,11 +1,4 @@
-let cache = {}
-
 function request(url, params = {}, method = 'GET') {
-  let cacheKey = JSON.stringify({ url, params, method })
-  if (cache[cacheKey]) {
-    return cache[cacheKey]
-  }
-
   let options = {
     method,
   }
@@ -21,7 +14,6 @@ function request(url, params = {}, method = 'GET') {
   }
 
   const result = fetch(url, options).then((response) => response.json())
-  cache[cacheKey] = result
 
   return result
 }

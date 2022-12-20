@@ -22,6 +22,34 @@
         z-index: 25;
         text-align: center;
       }
+
+      #videoElement {
+        width: 640px;
+        border-radius: 10px;
+        transform: rotateY(180deg);
+        -webkit-transform: rotateY(180deg); /* Safari and Chrome */
+        -moz-transform: rotateY(180deg); /* Firefox */
+      }
+
+      .mask {
+        position: absolute;
+        top: -50px; /* minus half the div size */
+        left: -50px; /* minus half the div size */
+        width: 100px; /* the div size */
+        height: 100px; /* the div size */
+        background-color: transparent;
+        border-radius: 100px; /* the div size */
+        border: 50px solid white; /* half the div size */
+        pointer-events: none; /* send mouse events beneath this layer */
+      }
+
+      .stuff {
+        position: absolute;
+        width: 100px; /* the div size */
+        height: 100px; /* the div size */
+        overflow: hidden; /* hide the excess of the mask border */
+        background-color: #ccc;
+      }
     </style>
   </head>
 
@@ -32,8 +60,8 @@
       <!-- wrapper for button  -->
       <div class="wrap">
         <video
+          id="videoElement"
           autoplay="true"
-          style="width: 640px; border-radius: 10px"
         ></video>
 
         <div class="overlay">
@@ -54,8 +82,8 @@
       </button>
     </center>
 
-    <!-- <script src="./js/faceLiveness.js"></script> -->
-    <script src="https://unpkg.com/@b6db07d1a5/aigen-sdk@1.0.4/dist/aigen-sdk.js"></script>
+    <script src="D:/Workspace/AIGen/git/aigen-face-recognition-sdk/examples/browser/aigen-sdk.js"></script>
+    <!-- <script src="https://unpkg.com/@b6db07d1a5/aigen-sdk@1.0.4/dist/aigen-sdk.js"></script> -->
     <script src="./js/fetch.js"></script>
 
     <!-- main js -->
