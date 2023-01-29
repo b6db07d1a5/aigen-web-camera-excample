@@ -1,4 +1,42 @@
-# aigen camera excample
+# aigen camera example
+
+## 1. Face Compare
+
+example of camera module for web platform integration
+
+- Desktop implementaion
+  https://github.com/b6db07d1a5/aigen-web-camera-excample/blob/main/camera_desktop.html
+
+- Mobile implementation
+  https://github.com/b6db07d1a5/aigen-web-camera-excample/blob/main/camera_mobile.html
+
+## Usage
+
+### Basic Example
+
+```typescript
+//base64 data for server side **due to security issue, please encrypt base64 with any secret
+let image_data_url = canvas.toDataURL('image/jpeg').replace(/^data:image\/jpeg;base64,/, '')
+
+//log base64
+console.log(image_data_url)
+
+// Post Image data to server
+```
+
+### Face Compare API
+
+https://docs.aigen.online/documents/api-reference/aiface/face-compare
+
+- Face Compare API does not support directly call from client, please call API from your own backend.
+
+```mermaid
+graph TD;
+    Client-->CustomerAPI;
+    CustomerAPI-->aigenAPI;
+```
+
+## 2. Face Liveness Detection
 
 integration client for aigen-sdk.js.
 
