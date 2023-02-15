@@ -50,7 +50,7 @@
     <div class="container">
       <div class="wrap">
         <div class="overlay">
-          <button name="click_photo">Take Photo</button>
+          <button name="click_photo">Take Photo v5</button>
         </div>
         <video class="cam" autoplay="true" muted="true" playsinline="true"></video>
         <canvas class="canv"></canvas>
@@ -58,74 +58,162 @@
     </div>
 
     <script>
-      ;(async function () {
-        //start
-        console.log('start open camera')
+      var video
+      var container
+      var takePhotoButton
+      var canvas
+      var amountOfCameras = 0
+      var currentFacingMode = 'user'
 
-        let video = document.querySelector('div.wrap video')
-        let canvas = document.querySelector('div.wrap canvas')
-        let container = document.querySelector('div.container')
-        let click_button = document.querySelector("div.overlay button[name='click_photo']")
+      document.addEventListener('DOMContentLoaded', function (event) {
+        // check if mediaDevices is supported
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia && navigator.mediaDevices.enumerateDevices) {
+          // first we call getUserMedia to trigger permissions
+          // we need this before deviceCount, otherwise Safari doesn't return all the cameras
+          // we need to have the number in order to display the switch front/back button
+          navigator.mediaDevices
+            .getUserMedia({
+              audio: false,
+              video: true,
+            })
+            .then(function (stream) {
+              stream.getTracks().forEach(function (track) {
+                track.stop()
+              })
 
-        let stream = null
+              deviceCount().then(function (deviceCount) {
+                amountOfCameras = deviceCount
 
-        //get media consent, image resolution ***more resolution is data tranfer size
+                // init the UI and the camera stream
+                initCameraUI()
+                initCameraStream()
+              })
+            })
+            .catch(function (error) {
+              //https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia
+              if (error === 'PermissionDeniedError') {
+                alert('Permission denied. Please refresh and give permission.')
+              }
 
-        try {
-          stream = await navigator.mediaDevices.getUserMedia({
-            video: { width: { ideal: 1920 }, height: { ideal: 1920 } },
-            facingMode: 'user',
-            audio: false,
+              console.error('getUserMedia() error: ', error)
+            })
+        } else {
+          alert('Mobile camera is not supported by browser, or there is no camera detected/connected')
+        }
+      })
+
+      function initCameraUI() {
+        video = document.querySelector('div.wrap video')
+        canvas = document.querySelector('div.wrap canvas')
+        container = document.querySelector('div.container')
+        takePhotoButton = document.querySelector("div.overlay button[name='click_photo']")
+
+        takePhotoButton.addEventListener('click', function () {
+          //takeSnapshotUI()
+          const base64 = takeSnapshot()
+          console.log(base64)
+        })
+      }
+
+      function initCameraStream() {
+        // stop any active streams in the window
+        if (window.stream) {
+          window.stream.getTracks().forEach(function (track) {
+            console.log(track)
+            track.stop()
           })
-        } catch (error) {
-          //on error can't open camera handler
-          alert(error.message)
-          return
         }
 
-        video.srcObject = stream
+        // we ask for a square resolution, it will cropped on top (landscape)
+        // or cropped at the sides (landscape)
+        const size = 1280
 
-        //onclick event take photo
-        click_button.addEventListener('click', function () {
-          try {
-            const playerWidth = video?.videoWidth || 1280
-            const playerHeight = video?.videoHeight || 720
-            const playerAR = playerWidth / playerHeight
+        const constraints = {
+          audio: false,
+          video: {
+            width: { ideal: size },
+            height: { ideal: size },
+            facingMode: currentFacingMode,
+          },
+        }
 
-            const canvasWidth = container?.offsetWidth || 1280
-            const canvasHeight = container?.offsetHeight || 1280
-            const canvasAR = canvasWidth / canvasHeight
+        navigator.mediaDevices.getUserMedia(constraints).then(handleSuccess).catch(handleError)
 
-            let sX, sY, sW, sH
+        function handleSuccess(stream) {
+          window.stream = stream // make stream available to browser console
+          video.srcObject = stream
 
-            if (playerAR > canvasAR) {
-              sH = playerHeight
-              sW = playerHeight * canvasAR
-              sX = (playerWidth - sW) / 2
-              sY = 0
-            } else {
-              sW = playerWidth
-              sH = playerWidth / canvasAR
-              sX = 0
-              sY = (playerHeight - sH) / 2
-            }
+          const track = window.stream.getVideoTracks()[0]
+          const settings = track.getSettings()
+          str = JSON.stringify(settings, null, 4)
+          console.log('settings ' + str)
+        }
 
-            canvas.width = sW
-            canvas.height = sH
+        function handleError(error) {
+          console.error('getUserMedia() error: ', error)
+        }
+      }
 
-            const context = canvas.getContext('2d')
-            if (context && video) {
-              context.drawImage(video, sX, sY, sW, sH, 0, 0, sW, sH)
-            }
+      function takeSnapshot() {
+        const playerWidth = video?.videoWidth || 1280
+        const playerHeight = video?.videoHeight || 720
+        const playerAR = playerWidth / playerHeight
 
-            let image_data_url = canvas.toDataURL('image/jpeg').replace(/^data:image\/jpeg;base64,/, '')
+        const canvasWidth = container?.offsetWidth || 1280
+        const canvasHeight = container?.offsetHeight || 1280
+        const canvasAR = canvasWidth / canvasHeight
 
-            console.log(image_data_url)
-          } catch (error) {
-            console.log(error)
-          }
+        let sX, sY, sW, sH
+
+        if (playerAR > canvasAR) {
+          sH = playerHeight
+          sW = playerHeight * canvasAR
+          sX = (playerWidth - sW) / 2
+          sY = 0
+        } else {
+          sW = playerWidth
+          sH = playerWidth / canvasAR
+          sX = 0
+          sY = (playerHeight - sH) / 2
+        }
+
+        canvas.width = sW
+        canvas.height = sH
+
+        const context = canvas.getContext('2d')
+        if (context && video) {
+          context.drawImage(video, sX, sY, sW, sH, 0, 0, sW, sH)
+        }
+
+        return canvas.toDataURL('image/jpeg').replace(/^data:image\/jpeg;base64,/, '')
+      }
+
+      function deviceCount() {
+        return new Promise(function (resolve) {
+          let videoInCount = 0
+
+          navigator.mediaDevices
+            .enumerateDevices()
+            .then(function (devices) {
+              devices.forEach(function (device) {
+                if (device.kind === 'video') {
+                  device.kind = 'videoinput'
+                }
+
+                if (device.kind === 'videoinput') {
+                  videoInCount++
+                  console.log('videocam: ' + device.label)
+                }
+              })
+
+              resolve(videoInCount)
+            })
+            .catch(function (err) {
+              console.log(err.name + ': ' + err.message)
+              resolve(0)
+            })
         })
-      })()
+      }
     </script>
   </body>
 </html>
