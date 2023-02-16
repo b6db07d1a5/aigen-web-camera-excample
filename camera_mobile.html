@@ -57,6 +57,18 @@
       </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/eruda@2.11.2/eruda.min.js"></script>
+    <script>
+      eruda.init()
+      let el = document.createElement('div')
+      document.body.appendChild(el)
+
+      eruda.init({
+        container: el,
+        tool: ['console', 'elements'],
+      })
+    </script>
+
     <script>
       var video
       var container
