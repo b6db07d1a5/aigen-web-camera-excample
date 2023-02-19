@@ -21,6 +21,18 @@
       </div>
       <canvas id="vid_canvas"></canvas>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/eruda@2.11.2/eruda.min.js"></script>
+    <script>
+      eruda.init()
+      let el = document.createElement('div')
+      document.body.appendChild(el)
+
+      eruda.init({
+        container: el,
+        tool: ['console', 'elements'],
+      })
+    </script>
     <script src="js/adapter.min.js"></script>
     <script src="js/screenfull.min.js"></script>
     <script src="js/howler.core.min.js"></script>
