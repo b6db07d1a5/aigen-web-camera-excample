@@ -29,16 +29,21 @@ body {
 
 #video_overlay {
   position: fixed;
-  display: none;
+  /* display: none; */
   width: 100%;
   height: 100%;
-  top: 0;
+  top: -10%;
   left: 0;
   right: 0;
   bottom: 0;
 
   z-index: 10;
-  background-color: #111;
+  /* background-color: #111; */
+  background-image: url('img/ic_idcard_white.svg');
+  background-repeat: no-repeat;
+  background-position: center;
+  transform: rotate(90deg) scale(1.2);
+  
 }
 
 #vid_canvas {
@@ -101,6 +106,10 @@ button {
 }
 
 #switchCameraButton[aria-pressed='true'] {
+  background-image: url('img/ic_camera_front_white_36px.svg');
+}
+
+#idcard_layout {
   background-image: url('img/ic_camera_front_white_36px.svg');
 }
 

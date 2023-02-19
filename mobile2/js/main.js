@@ -15,7 +15,7 @@ var switchCameraButton
 var amountOfCameras = 0
 var videoContainer
 var videoCanvas
-var currentFacingMode = 'user'
+var currentFacingMode = 'environment'
 
 // this function counts the amount of video inputs
 // it replaces DetectRTC that was previously implemented.
