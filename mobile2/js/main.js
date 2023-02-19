@@ -222,34 +222,43 @@ function initCameraStream() {
 }
 
 function takeSnapshot() {
-  // if you'd like to show the canvas add it to the DOM
-  var canvas = document.createElement('canvas')
+  var playerWidth = video.videoWidth || 1280
+  var playerHeight = video.videoHeight || 720
+  var playerAR = playerWidth / playerHeight
 
-  var width = video.videoWidth
-  var height = video.videoHeight
+  var canvasWidth = videoContainer.offsetWidth || 1280
+  var canvasHeight = videoContainer.offsetHeight || 1280
+  var canvasAR = canvasWidth / canvasHeight
 
-  canvas.width = width
-  canvas.height = height
+  var sX, sY, sW, sH
 
-  context = canvas.getContext('2d')
-  context.drawImage(video, 0, 0, width, height)
-
-  // polyfil if needed https://github.com/blueimp/JavaScript-Canvas-to-Blob
-
-  // https://developers.google.com/web/fundamentals/primers/promises
-  // https://stackoverflow.com/questions/42458849/access-blob-value-outside-of-canvas-toblob-async-function
-  function getCanvasBlob(canvas) {
-    return new Promise(function (resolve, reject) {
-      canvas.toBlob(function (blob) {
-        resolve(blob)
-      }, 'image/jpeg')
-    })
+  if (playerAR > canvasAR) {
+    sH = playerHeight
+    sW = playerHeight * canvasAR
+    sX = (playerWidth - sW) / 2
+    sY = 0
+  } else {
+    sW = playerWidth
+    sH = playerWidth / canvasAR
+    sX = 0
+    sY = (playerHeight - sH) / 2
   }
 
-  // some API's (like Azure Custom Vision) need a blob with image data
-  getCanvasBlob(canvas).then(function (blob) {
-    // do something with the image blob
-  })
+  videoCanvas.width = sW
+  videoCanvas.height = sH
+
+  var context = videoCanvas.getContext('2d')
+
+  if (context && video) {
+    context.translate(sW, 0)
+    context.scale(-1, 1)
+    context.drawImage(video, sX, sY, sW, sH, 0, 0, sW, sH)
+  }
+
+  var base64 = videoCanvas.toDataURL('image/jpeg').replace(/^data:image\/jpeg;base64,/, '')
+
+  console.log(base64)
+  return base64
 }
 
 // https://hackernoon.com/how-to-use-javascript-closures-with-confidence-85cd1f841a6b
