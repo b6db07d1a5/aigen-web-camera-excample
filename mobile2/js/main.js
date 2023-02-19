@@ -269,7 +269,7 @@ function takeSnapshot() {
 function createClickFeedbackUI() {
   // in order to give feedback that we actually pressed a button.
   // we trigger a almost black overlay
-  var overlay = document.getElementById('video_overlay') //.style.display;
+  //var overlay = document.getElementById('video_overlay') //.style.display;
 
   // sound feedback
   var sndClick = new Howl({ src: ['snd/click.mp3'] })
@@ -279,14 +279,14 @@ function createClickFeedbackUI() {
 
   function setFalseAgain() {
     overlayVisibility = false
-    overlay.style.display = 'none'
+    //overlay.style.display = 'none'
   }
 
   return function () {
     if (overlayVisibility == false) {
       sndClick.play()
       overlayVisibility = true
-      overlay.style.display = 'block'
+      //overlay.style.display = 'block'
       setTimeout(setFalseAgain, timeOut)
     }
   }
