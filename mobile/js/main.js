@@ -12,6 +12,8 @@ var video
 var takePhotoButton
 var toggleFullScreenButton
 var switchCameraButton
+var videoContainer
+var videoCanvas
 var amountOfCameras = 0
 var currentFacingMode = 'environment'
 
@@ -83,10 +85,11 @@ document.addEventListener('DOMContentLoaded', function (event) {
 
 function initCameraUI() {
   video = document.getElementById('video')
-
   takePhotoButton = document.getElementById('takePhotoButton')
   toggleFullScreenButton = document.getElementById('toggleFullScreenButton')
   switchCameraButton = document.getElementById('switchCameraButton')
+  videoContainer = document.getElementById('vid_container')
+  videoCanvas = document.getElementById('vid_canvas')
 
   // https://developer.mozilla.org/nl/docs/Web/HTML/Element/button
   // https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/ARIA_Techniques/Using_the_button_role
@@ -218,38 +221,57 @@ function initCameraStream() {
 }
 
 function takeSnapshot() {
-  // if you'd like to show the canvas add it to the DOM
-  var canvas = document.createElement('canvas')
+  const playerWidth = video?.videoWidth || 1280
+  const playerHeight = video?.videoHeight || 720
+  const playerAR = playerWidth / playerHeight
 
-  var width = video.videoWidth
-  var height = video.videoHeight
+  const canvasWidth = videoContainer?.offsetWidth || 1280
+  const canvasHeight = videoContainer?.offsetHeight || 1280
+  const canvasAR = canvasWidth / canvasHeight
 
-  canvas.width = width
-  canvas.height = height
+  let sX, sY, sW, sH
 
-  context = canvas.getContext('2d')
-  context.drawImage(video, 0, 0, width, height)
-
-  // polyfil if needed https://github.com/blueimp/JavaScript-Canvas-to-Blob
-
-  // https://developers.google.com/web/fundamentals/primers/promises
-  // https://stackoverflow.com/questions/42458849/access-blob-value-outside-of-canvas-toblob-async-function
-  function getCanvasBlob(canvas) {
-    return new Promise(function (resolve, reject) {
-      canvas.toBlob(function (blob) {
-        resolve(blob)
-      }, 'image/jpeg')
-    })
+  if (playerAR > canvasAR) {
+    sH = playerHeight
+    sW = playerHeight * canvasAR
+    sX = (playerWidth - sW) / 2
+    sY = 0
+  } else {
+    sW = playerWidth
+    sH = playerWidth / canvasAR
+    sX = 0
+    sY = (playerHeight - sH) / 2
   }
 
-  // some API's (like Azure Custom Vision) need a blob with image data
-  // getCanvasBlob(canvas).then(function (blob) {
-  //   // do something with the image blob
-  // })
+  videoCanvas.width = sW
+  videoCanvas.height = sH
 
-  const ddd = canvas.toDataURL('image/jpeg').replace(/^data:image\/jpeg;base64,/, '')
+  const context = videoCanvas.getContext('2d')
 
-  console.log(ddd)
+  if (context && video) {
+    context.translate(sW, 0)
+    context.scale(-1, 1)
+    context.drawImage(video, sX, sY, sW, sH, 0, 0, sW, sH)
+  }
+
+  const base64 = videoCanvas.toDataURL('image/jpeg').replace(/^data:image\/jpeg;base64,/, '')
+
+  console.log(base64)
+  return base64
+}
+
+function mirrorImage(ctx, image, x = 0, y = 0, horizontal = false, vertical = false) {
+  ctx.save() // save the current canvas state
+  ctx.setTransform(
+    horizontal ? -1 : 1,
+    0, // set the direction of x axis
+    0,
+    vertical ? -1 : 1, // set the direction of y axis
+    x + (horizontal ? image.width : 0), // set the x origin
+    y + (vertical ? image.height : 0) // set the y origin
+  )
+  ctx.drawImage(image, 0, 0)
+  ctx.restore() // restore the state as it was when this function was called
 }
 
 // https://hackernoon.com/how-to-use-javascript-closures-with-confidence-85cd1f841a6b
