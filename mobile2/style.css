@@ -109,10 +109,6 @@ button {
   background-image: url('img/ic_camera_front_white_36px.svg');
 }
 
-#idcard_layout {
-  background-image: url('img/ic_camera_front_white_36px.svg');
-}
-
 @media screen and (orientation: portrait) {
   /* portrait-specific styles */
 
