@@ -221,8 +221,8 @@ function initCameraStream() {
 }
 
 function takeSnapshot() {
-  const playerWidth = video?.videoWidth || 1280
-  const playerHeight = video?.videoHeight || 720
+  const playerWidth = video.videoWidth || 1280
+  const playerHeight = video.videoHeight || 720
   const playerAR = playerWidth / playerHeight
 
   const canvasWidth = videoContainer?.offsetWidth || 1280
