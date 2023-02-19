@@ -41,6 +41,10 @@ body {
   background-color: #111;
 }
 
+#vid_canvas {
+  display: none;
+}
+
 /*  Button style from: 
     https://googlesamples.github.io/web-fundamentals/fundamentals/media/mobile-web-video-playback.html */
 
