@@ -10,41 +10,9 @@ var takeSnapshotUI = createClickFeedbackUI()
 
 var video
 var takePhotoButton
-var toggleFullScreenButton
-var switchCameraButton
-var amountOfCameras = 0
 var videoContainer
 var videoCanvas
-var currentFacingMode = 'environment'
-
-// this function counts the amount of video inputs
-// it replaces DetectRTC that was previously implemented.
-function deviceCount() {
-  return new Promise(function (resolve) {
-    var videoInCount = 0
-
-    navigator.mediaDevices
-      .enumerateDevices()
-      .then(function (devices) {
-        devices.forEach(function (device) {
-          if (device.kind === 'video') {
-            device.kind = 'videoinput'
-          }
-
-          if (device.kind === 'videoinput') {
-            videoInCount++
-            console.log('videocam: ' + device.label)
-          }
-        })
-
-        resolve(videoInCount)
-      })
-      .catch(function (err) {
-        console.log(err.name + ': ' + err.message)
-        resolve(0)
-      })
-  })
-}
+var currentFacingMode = 'user'
 
 document.addEventListener('DOMContentLoaded', function (event) {
   // check if mediaDevices is supported
@@ -62,13 +30,9 @@ document.addEventListener('DOMContentLoaded', function (event) {
           track.stop()
         })
 
-        deviceCount().then(function (deviceCount) {
-          amountOfCameras = deviceCount
-
-          // init the UI and the camera stream
-          initCameraUI()
-          initCameraStream()
-        })
+        // init the UI and the camera stream
+        initCameraUI()
+        initCameraStream()
       })
       .catch(function (error) {
         //https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia
@@ -85,10 +49,7 @@ document.addEventListener('DOMContentLoaded', function (event) {
 
 function initCameraUI() {
   video = document.getElementById('video')
-
   takePhotoButton = document.getElementById('takePhotoButton')
-  toggleFullScreenButton = document.getElementById('toggleFullScreenButton')
-  switchCameraButton = document.getElementById('switchCameraButton')
   videoContainer = document.getElementById('vid_container')
   videoCanvas = document.getElementById('vid_canvas')
 
@@ -99,45 +60,6 @@ function initCameraUI() {
     takeSnapshotUI()
     takeSnapshot()
   })
-
-  // -- fullscreen part
-
-  function fullScreenChange() {
-    if (screenfull.isFullscreen) {
-      toggleFullScreenButton.setAttribute('aria-pressed', true)
-    } else {
-      toggleFullScreenButton.setAttribute('aria-pressed', false)
-    }
-  }
-
-  if (screenfull.isEnabled) {
-    screenfull.on('change', fullScreenChange)
-
-    toggleFullScreenButton.style.display = 'block'
-
-    // set init values
-    fullScreenChange()
-
-    toggleFullScreenButton.addEventListener('click', function () {
-      screenfull.toggle(document.getElementById('container')).then(function () {
-        console.log('Fullscreen mode: ' + (screenfull.isFullscreen ? 'enabled' : 'disabled'))
-      })
-    })
-  } else {
-    console.log("iOS doesn't support fullscreen (yet)")
-  }
-
-  // -- switch camera part
-  if (amountOfCameras > 1) {
-    switchCameraButton.style.display = 'block'
-
-    switchCameraButton.addEventListener('click', function () {
-      if (currentFacingMode === 'environment') currentFacingMode = 'user'
-      else currentFacingMode = 'environment'
-
-      initCameraStream()
-    })
-  }
 
   // Listen for orientation changes to make sure buttons stay at the side of the
   // physical (and virtual) buttons (opposite of camera) most of the layout change is done by CSS media queries
@@ -190,8 +112,6 @@ function initCameraStream() {
     video: {
       width: { ideal: size },
       height: { ideal: size },
-      //width: { min: 1024, ideal: window.innerWidth, max: 1920 },
-      //height: { min: 776, ideal: window.innerHeight, max: 1080 },
       facingMode: currentFacingMode,
     },
   }
@@ -201,14 +121,6 @@ function initCameraStream() {
   function handleSuccess(stream) {
     window.stream = stream // make stream available to browser console
     video.srcObject = stream
-
-    if (constraints.video.facingMode) {
-      if (constraints.video.facingMode === 'environment') {
-        switchCameraButton.setAttribute('aria-pressed', true)
-      } else {
-        switchCameraButton.setAttribute('aria-pressed', false)
-      }
-    }
 
     const track = window.stream.getVideoTracks()[0]
     const settings = track.getSettings()
@@ -269,24 +181,26 @@ function takeSnapshot() {
 function createClickFeedbackUI() {
   // in order to give feedback that we actually pressed a button.
   // we trigger a almost black overlay
-  //var overlay = document.getElementById('video_overlay') //.style.display;
+  var feedbackUI = document.getElementById('feedback_ui') //.style.display;
 
-  // sound feedback
-  var sndClick = new Howl({ src: ['snd/click.mp3'] })
+  //sound notification
+  const sndClick = new Audio('./snd/click.mp3')
+
+  //var sndClick = new Howl({ src: ['snd/click.mp3'] })
 
   var overlayVisibility = false
   var timeOut = 80
 
   function setFalseAgain() {
     overlayVisibility = false
-    //overlay.style.display = 'none'
+    feedbackUI.style.display = 'none'
   }
 
   return function () {
     if (overlayVisibility == false) {
       sndClick.play()
       overlayVisibility = true
-      //overlay.style.display = 'block'
+      feedbackUI.style.display = 'block'
       setTimeout(setFalseAgain, timeOut)
     }
   }
