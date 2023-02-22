@@ -160,10 +160,10 @@ button {
   
     z-index: 10;
     /* background-color: #111; */
-    background-image: url('img/ic_idcard_white.svg');
+    background-image: url('img/ic_face_scan.svg');
     background-repeat: no-repeat;
     background-position: center;
-    transform: rotate(90deg) scale(1.2);
+    transform: scale(0.95);
     
   }
 }
@@ -212,10 +212,10 @@ button {
   
     z-index: 10;
     /* background-color: #111; */
-    background-image: url('img/ic_idcard_white.svg');
+    background-image: url('img/ic_face_scan.svg');
     background-repeat: no-repeat;
     background-position: center;
-    transform: rotate(360deg) scale(0.8);
+    transform: scale(0.95);
     
   }
 }
