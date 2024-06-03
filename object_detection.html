@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Demo - Capture Photo From Webcam Using Javascript</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+    <style type="text/css">
+      .wrap {
+        position: relative;
+      }
+      .canv {
+        display: none;
+      }
+      .layout {
+        position: absolute;
+        background: url(https://aigen-sysdev-solution.s3.ap-southeast-1.amazonaws.com/demo/idcard-white.svg);
+        background-position: center;
+        background-repeat: no-repeat;
+        transform: scale(0.8);
+        width: 100%;
+        height: 100%;
+        top: 0;
+        z-index: 1;
+      }
+    </style>
+  </head>
+
+  <body>
+    <center>
+      <h2>Demo - Capture Photo From Webcam Using Javascript</h2>
+
+      <!-- wrapper for button  -->
+      <div class="wrap">
+        <video autoplay="true" style="width: 640px; border-radius: 10px"></video>
+        <div class="layout"></div>
+        <canvas class="canv"></canvas>
+      </div>
+
+      <span class="score"></span>
+    </center>
+
+    <script src="./libs/aigen-sdk.js"></script>
+
+    <script>
+      var objectDetector
+      var video
+      var canvas
+      var score
+
+      document.addEventListener('DOMContentLoaded', function (event) {
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia && navigator.mediaDevices.enumerateDevices) {
+          navigator.mediaDevices
+            .getUserMedia({
+              audio: false,
+              video: true,
+            })
+            .then(function (stream) {
+              stream.getTracks().forEach(function (track) {
+                track.stop()
+              })
+
+              deviceCount().then(function (deviceCount) {
+                initCameraUI()
+                initCameraStream()
+              })
+            })
+            .catch(function (error) {
+              //https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia
+              if (error === 'PermissionDeniedError') {
+                alert('Permission denied. Please refresh and give permission.')
+              }
+
+              console.error('getUserMedia() error: ', error)
+            })
+        } else {
+          alert('Mobile camera is not supported by browser, or there is no camera detected/connected')
+        }
+      })
+
+      function initCameraUI() {
+        video = document.querySelector('div.wrap video')
+        canvas = document.querySelector('div.wrap canvas')
+        score = document.querySelector('span.score')
+      }
+
+      async function initCameraStream() {
+        // we ask for a square resolution, it will cropped on top (landscape)
+        // or cropped at the sides (landscape)
+
+        const { add, sub, ObjectDetection } = new AIGEN()
+
+        objectDetector = await ObjectDetection.initializeObjectDetector()
+
+        const size = 1280
+        const currentFacingMode = 'environment'
+
+        const constraints = {
+          audio: false,
+          video: {
+            width: { ideal: size },
+            height: { ideal: size },
+            facingMode: currentFacingMode,
+          },
+        }
+
+        navigator.mediaDevices.getUserMedia(constraints).then(handleSuccess).catch(handleError)
+
+        function handleSuccess(stream) {
+          video.srcObject = stream
+          //video.addEventListener('loadeddata', predictWebcam)
+        }
+
+        function handleError(error) {
+          console.error('getUserMedia() error: ', error)
+        }
+      }
+
+      let lastVideoTime = -1
+
+      async function predictWebcam() {
+        let startTimeMs = performance.now()
+
+        // Detect objects using detectForVideo.
+        if (video.currentTime !== lastVideoTime) {
+          lastVideoTime = video.currentTime
+          const { detections } = objectDetector.detectForVideo(video, startTimeMs)
+
+          if (detections.length === 1) {
+            score.innerHTML = detections[0].categories[0].score.toFixed(2)
+
+            if (detections[0].categories[0].score > 0.8) {
+              const { originX, originY, width, height } = detections[0].boundingBox
+
+              // console.log(`${originX} , ${originY}`)
+              // console.log(width)
+              // const base64 = takeSnapshot()
+
+              // video.pause()
+              // video.currentTime = 0
+            }
+          } else {
+            score.innerHTML = 'Not Found'
+          }
+        }
+
+        // Call this function again to keep predicting when the browser is ready
+        window.requestAnimationFrame(predictWebcam)
+      }
+
+      function takeSnapshot() {
+        const playerWidth = video?.videoWidth || 1280
+        const playerHeight = video?.videoHeight || 720
+        const playerAR = playerWidth / playerHeight
+
+        const canvasWidth = video?.offsetWidth || 1280
+        const canvasHeight = video?.offsetHeight || 1280
+        const canvasAR = canvasWidth / canvasHeight
+
+        let sX, sY, sW, sH
+
+        if (playerAR > canvasAR) {
+          sH = playerHeight
+          sW = playerHeight * canvasAR
+          sX = (playerWidth - sW) / 2
+          sY = 0
+        } else {
+          sW = playerWidth
+          sH = playerWidth / canvasAR
+          sX = 0
+          sY = (playerHeight - sH) / 2
+        }
+
+        canvas.width = sW
+        canvas.height = sH
+
+        const context = canvas.getContext('2d')
+        if (context && video) {
+          context.drawImage(video, sX, sY, sW, sH, 0, 0, sW, sH)
+        }
+
+        return canvas.toDataURL('image/jpeg').replace(/^data:image\/jpeg;base64,/, '')
+      }
+
+      function deviceCount() {
+        return new Promise(function (resolve) {
+          let videoInCount = 0
+
+          navigator.mediaDevices
+            .enumerateDevices()
+            .then(function (devices) {
+              devices.forEach(function (device) {
+                if (device.kind === 'video') {
+                  device.kind = 'videoinput'
+                }
+
+                if (device.kind === 'videoinput') {
+                  videoInCount++
+                  console.log('videocam: ' + device.label)
+                }
+              })
+
+              resolve(videoInCount)
+            })
+            .catch(function (err) {
+              console.log(err.name + ': ' + err.message)
+              resolve(0)
+            })
+        })
+      }
+    </script>
+  </body>
+</html>
