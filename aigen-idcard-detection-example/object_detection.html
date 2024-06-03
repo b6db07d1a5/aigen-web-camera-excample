@@ -87,7 +87,7 @@
         // we ask for a square resolution, it will cropped on top (landscape)
         // or cropped at the sides (landscape)
 
-        const { add, sub, ObjectDetection } = new AIGEN()
+        const { ObjectDetection } = new AIGEN()
 
         objectDetector = await ObjectDetection.initializeObjectDetector()
 
@@ -107,7 +107,7 @@
 
         function handleSuccess(stream) {
           video.srcObject = stream
-          //video.addEventListener('loadeddata', predictWebcam)
+          video.addEventListener('loadeddata', predictWebcam)
         }
 
         function handleError(error) {
@@ -151,7 +151,7 @@
         const playerWidth = video?.videoWidth || 1280
         const playerHeight = video?.videoHeight || 720
         const playerAR = playerWidth / playerHeight
-
+        // aspect ratio setting
         const canvasWidth = video?.offsetWidth || 1280
         const canvasHeight = video?.offsetHeight || 1280
         const canvasAR = canvasWidth / canvasHeight
