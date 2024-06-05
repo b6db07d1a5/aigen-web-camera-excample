@@ -244,6 +244,8 @@ async function initCameraStream() {
 
 let lastVideoTime = -1;
 
+var logger = document.getElementById('logger');
+
 async function predictWebcam() {
   let startTimeMs = performance.now();
 
@@ -255,12 +257,11 @@ async function predictWebcam() {
     if (detections.length === 1) {
       const { originX, originY, width, height } = detections[0].boundingBox;
 
-      console.log('width', width);
-      console.log('globalAngle', globalAngle);
+      logger.innerHTML = width;
 
-      if (globalAngle === 90 && width > 700 && width < 850) {
+      if (globalAngle === 90 && width > 900 && width < 1100) {
         layoutOverlay.classList.add('pass');
-      } else if (globalAngle === 0 && width > 350 && width < 450) {
+      } else if (globalAngle === 0 && width > 600 && width < 700) {
         layoutOverlay.classList.add('pass');
       }
     } else {

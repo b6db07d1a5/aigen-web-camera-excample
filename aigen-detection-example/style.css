@@ -124,7 +124,7 @@ button {
     */
 
   #layout_overlay {
-    transform: rotate(90deg) scale(1.3);
+    transform: rotate(90deg) scale(1.1);
     top: -5%;
   }
 
@@ -152,7 +152,7 @@ button {
 
 @media screen and (orientation: landscape) {
   #layout_overlay {
-    transform: scale(0.7);
+    transform: scale(0.9);
     right: 10%;
   }
 
