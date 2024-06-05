@@ -40,7 +40,7 @@ body {
 
 #layout_overlay {
   position: fixed;
-  background: url(https://aigen-sysdev-solution.s3.ap-southeast-1.amazonaws.com/demo/idcard-white.svg);
+  background: url('img/idcard-white.svg');
   background-position: center;
   background-repeat: no-repeat;
   // transform: scale(0.8);
