@@ -16,6 +16,7 @@ var amountOfCameras = 0;
 var currentFacingMode = 'environment';
 var objectDetector;
 var globalAngle = 0;
+var layoutOverlay;
 
 // this function counts the amount of video inputs
 // it replaces DetectRTC that was previously implemented.
@@ -95,6 +96,7 @@ function initCameraUI() {
   takePhotoButton = document.getElementById('takePhotoButton');
   toggleFullScreenButton = document.getElementById('toggleFullScreenButton');
   switchCameraButton = document.getElementById('switchCameraButton');
+  layoutOverlay = document.getElementById('layout_overlay');
 
   // https://developer.mozilla.org/nl/docs/Web/HTML/Element/button
   // https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/ARIA_Techniques/Using_the_button_role
@@ -253,23 +255,17 @@ async function predictWebcam() {
     if (detections.length === 1) {
       const { originX, originY, width, height } = detections[0].boundingBox;
 
-      if (globalAngle === 90) {
-        if (originX > 200 && originX < 350 && originY > 50 && originY < 150) {
-          console.log(`${originX} , ${originY}`);
-        }
+      console.log('width', width);
+      console.log('globalAngle', globalAngle);
+
+      if (globalAngle === 90 && width > 700 && width < 850) {
+        layoutOverlay.classList.add('pass');
+      } else if (globalAngle === 0 && width > 350 && width < 450) {
+        layoutOverlay.classList.add('pass');
       }
-
-      if (globalAngle === 0) {
-        if (originX > 400 && originX < 500 && originY > 50 && originY < 150) {
-          console.log(`${originX} , ${originY}`);
-        }
-      }
-
-      // console.log(width)
-      // const base64 = takeSnapshot()
-
-      // video.pause()
-      // video.currentTime = 0
+    } else {
+      layoutOverlay.classList.remove('pass');
+      layoutOverlay.classList.add('not-pass');
     }
   }
 

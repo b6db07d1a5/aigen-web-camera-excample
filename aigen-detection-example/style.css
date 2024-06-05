@@ -50,6 +50,13 @@ body {
   z-index: 1;
 }
 
+.not-pass {
+  background-image: url('img/idcard-red.svg') !important;
+}
+.pass {
+  background-image: url('img/idcard-green.svg') !important;
+}
+
 /*  Button style from: 
     https://googlesamples.github.io/web-fundamentals/fundamentals/media/mobile-web-video-playback.html */
 
@@ -117,8 +124,8 @@ button {
     */
 
   #layout_overlay {
-    transform: rotate(90deg) scale(1.2);
-    top: -10%;
+    transform: rotate(90deg) scale(1.3);
+    top: -5%;
   }
 
   #vid_container {
