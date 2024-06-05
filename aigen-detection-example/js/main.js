@@ -14,6 +14,7 @@ var toggleFullScreenButton;
 var switchCameraButton;
 var amountOfCameras = 0;
 var currentFacingMode = 'environment';
+var objectDetector;
 
 // this function counts the amount of video inputs
 // it replaces DetectRTC that was previously implemented.
@@ -177,7 +178,7 @@ function initCameraUI() {
 }
 
 // https://github.com/webrtc/samples/blob/gh-pages/src/content/devices/input-output/js/main.js
-function initCameraStream() {
+async function initCameraStream() {
   // stop any active streams in the window
   if (window.stream) {
     window.stream.getTracks().forEach(function (track) {
@@ -195,11 +196,13 @@ function initCameraStream() {
     video: {
       width: { ideal: size },
       height: { ideal: size },
-      //width: { min: 1024, ideal: window.innerWidth, max: 1920 },
-      //height: { min: 776, ideal: window.innerHeight, max: 1080 },
       facingMode: currentFacingMode,
     },
   };
+
+  const { ObjectDetection } = new AIGEN();
+
+  objectDetector = await ObjectDetection.initializeObjectDetector();
 
   navigator.mediaDevices
     .getUserMedia(constraints)
@@ -209,6 +212,8 @@ function initCameraStream() {
   function handleSuccess(stream) {
     window.stream = stream; // make stream available to browser console
     video.srcObject = stream;
+
+    video.addEventListener('loadeddata', predictWebcam);
 
     if (constraints.video.facingMode) {
       if (constraints.video.facingMode === 'environment') {
@@ -227,6 +232,32 @@ function initCameraStream() {
   function handleError(error) {
     console.error('getUserMedia() error: ', error);
   }
+}
+
+let lastVideoTime = -1;
+
+async function predictWebcam() {
+  let startTimeMs = performance.now();
+
+  // Detect objects using detectForVideo.
+  if (video.currentTime !== lastVideoTime) {
+    lastVideoTime = video.currentTime;
+    const { detections } = objectDetector.detectForVideo(video, startTimeMs);
+
+    if (detections.length === 1) {
+      const { originX, originY, width, height } = detections[0].boundingBox;
+
+      console.log(`${originX} , ${originY}`);
+      // console.log(width)
+      // const base64 = takeSnapshot()
+
+      // video.pause()
+      // video.currentTime = 0
+    }
+  }
+
+  // Call this function again to keep predicting when the browser is ready
+  window.requestAnimationFrame(predictWebcam);
 }
 
 function takeSnapshot() {
