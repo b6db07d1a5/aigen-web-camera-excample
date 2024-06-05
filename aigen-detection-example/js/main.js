@@ -15,6 +15,7 @@ var switchCameraButton;
 var amountOfCameras = 0;
 var currentFacingMode = 'environment';
 var objectDetector;
+var globalAngle = 0;
 
 // this function counts the amount of video inputs
 // it replaces DetectRTC that was previously implemented.
@@ -168,6 +169,8 @@ function initCameraUI() {
         if (vidContainer.contains('left')) vidContainer.remove('left');
       }
 
+      globalAngle = angle;
+
       //0   portrait-primary
       //180 portrait-secondary device is down under
       //90  landscape-primary  buttons at the right
@@ -199,6 +202,9 @@ async function initCameraStream() {
       facingMode: currentFacingMode,
     },
   };
+
+  if (screen.orientation) globalAngle = screen.orientation.angle;
+  else globalAngle = window.orientation;
 
   const { ObjectDetection } = new AIGEN();
 
@@ -247,7 +253,18 @@ async function predictWebcam() {
     if (detections.length === 1) {
       const { originX, originY, width, height } = detections[0].boundingBox;
 
-      console.log(`${originX} , ${originY}`);
+      if (globalAngle === 90) {
+        if (originX > 200 && originX < 350 && originY > 50 && originY < 150) {
+          console.log(`${originX} , ${originY}`);
+        }
+      }
+
+      if (globalAngle === 0) {
+        if (originX > 400 && originX < 500 && originY > 50 && originY < 150) {
+          console.log(`${originX} , ${originY}`);
+        }
+      }
+
       // console.log(width)
       // const base64 = takeSnapshot()
 

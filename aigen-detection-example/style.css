@@ -117,7 +117,7 @@ button {
     */
 
   #layout_overlay {
-    transform: rotate(90deg) scale(0.8);
+    transform: rotate(90deg) scale(1.2);
     top: -10%;
   }
 
