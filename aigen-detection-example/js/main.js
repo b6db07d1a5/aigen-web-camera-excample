@@ -1,11 +1,3 @@
-/*
-
->> kasperkamperman.com - 2018-04-18
->> kasperkamperman.com - 2020-05-17
->> https://www.kasperkamperman.com/blog/camera-template/
-
-*/
-
 var takeSnapshotUI = createClickFeedbackUI();
 
 var video;
@@ -218,7 +210,7 @@ async function initCameraStream() {
     .catch(handleError);
 
   function handleSuccess(stream) {
-    window.stream = stream; // make stream available to browser console
+    window.stream = stream; // make stream available to browser console for detect RTC
     video.srcObject = stream;
 
     video.addEventListener('loadeddata', predictWebcam);
