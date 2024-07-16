@@ -9,6 +9,12 @@ var currentFacingMode = 'environment';
 var faceDetector;
 var globalAngle = 0;
 var layoutOverlay;
+var isDetecting = false;
+
+let sequence;
+let adviseText;
+
+const audioNotify = new Audio('./snd/notification-sound.wav');
 
 const { FaceDetection } = new aigenSDK();
 
@@ -86,49 +92,7 @@ document.addEventListener('DOMContentLoaded', function (event) {
 
 function initCameraUI() {
   video = document.getElementById('video');
-
-  // takePhotoButton = document.getElementById('takePhotoButton');
-  // toggleFullScreenButton = document.getElementById('toggleFullScreenButton');
-  // switchCameraButton = document.getElementById('switchCameraButton');
-  // layoutOverlay = document.getElementById('layout_overlay');
-
-  // https://developer.mozilla.org/nl/docs/Web/HTML/Element/button
-  // https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/ARIA_Techniques/Using_the_button_role
-
-  // takePhotoButton.addEventListener('click', function () {
-  //   takeSnapshotUI();
-  //   takeSnapshot();
-  // });
-
-  // -- fullscreen part
-
-  // function fullScreenChange() {
-  //   if (screenfull.isFullscreen) {
-  //     toggleFullScreenButton.setAttribute('aria-pressed', true);
-  //   } else {
-  //     toggleFullScreenButton.setAttribute('aria-pressed', false);
-  //   }
-  // }
-
-  // if (screenfull.isEnabled) {
-  //   screenfull.on('change', fullScreenChange);
-
-  //   toggleFullScreenButton.style.display = 'block';
-
-  //   // set init values
-  //   fullScreenChange();
-
-  //   toggleFullScreenButton.addEventListener('click', function () {
-  //     screenfull.toggle(document.getElementById('container')).then(function () {
-  //       console.log(
-  //         'Fullscreen mode: ' +
-  //           (screenfull.isFullscreen ? 'enabled' : 'disabled'),
-  //       );
-  //     });
-  //   });
-  // } else {
-  //   console.log("iOS doesn't support fullscreen (yet)");
-  // }
+  adviseText = document.getElementById('advise-text');
 
   // -- switch camera part
   if (amountOfCameras > 1) {
@@ -141,39 +105,6 @@ function initCameraUI() {
       initCameraStream();
     });
   }
-
-  // Listen for orientation changes to make sure buttons stay at the side of the
-  // physical (and virtual) buttons (opposite of camera) most of the layout change is done by CSS media queries
-  // https://www.sitepoint.com/introducing-screen-orientation-api/
-  // https://developer.mozilla.org/en-US/docs/Web/API/Screen/orientation
-  // window.addEventListener(
-  //   'orientationchange',
-  //   function () {
-  //     // iOS doesn't have screen.orientation, so fallback to window.orientation.
-  //     // screen.orientation will
-  //     if (screen.orientation) angle = screen.orientation.angle;
-  //     else angle = window.orientation;
-
-  //     var guiControls = document.getElementById('gui_controls').classList;
-  //     var vidContainer = document.getElementById('vid_container').classList;
-
-  //     if (angle == 270 || angle == -90) {
-  //       guiControls.add('left');
-  //       vidContainer.add('left');
-  //     } else {
-  //       if (guiControls.contains('left')) guiControls.remove('left');
-  //       if (vidContainer.contains('left')) vidContainer.remove('left');
-  //     }
-
-  //     globalAngle = angle;
-
-  //     //0   portrait-primary
-  //     //180 portrait-secondary device is down under
-  //     //90  landscape-primary  buttons at the right
-  //     //270 landscape-secondary buttons at the left
-  //   },
-  //   false,
-  // );
 }
 
 // https://github.com/webrtc/samples/blob/gh-pages/src/content/devices/input-output/js/main.js
@@ -186,8 +117,6 @@ async function initCameraStream() {
     });
   }
 
-  // we ask for a square resolution, it will cropped on top (landscape)
-  // or cropped at the sides (landscape)
   var size = 1280;
 
   var constraints = {
@@ -198,9 +127,6 @@ async function initCameraStream() {
       facingMode: currentFacingMode,
     },
   };
-
-  // if (screen.orientation) globalAngle = screen.orientation.angle;
-  // else globalAngle = window.orientation;
 
   faceDetector = await FaceDetection.initializeFaceDetector();
 
@@ -213,8 +139,8 @@ async function initCameraStream() {
     window.stream = stream; // make stream available to browser console for detect RTC
     video.srcObject = stream;
 
-    //TODO
-    // video.addEventListener('loadeddata', predictWebcam);
+    //TODO ================================================
+    video.addEventListener('loadeddata', predictWebcam);
 
     const track = window.stream.getVideoTracks()[0];
     const settings = track.getSettings();
@@ -228,6 +154,7 @@ async function initCameraStream() {
 }
 
 let lastVideoTime = -1;
+let centerCount = -1;
 
 async function predictWebcam() {
   let startTimeMs = performance.now();
@@ -236,14 +163,53 @@ async function predictWebcam() {
   if (video.currentTime !== lastVideoTime) {
     lastVideoTime = video.currentTime;
 
-    const detections = FaceDetection.detectForVideo(
+    const detection = FaceDetection.detectForVideo(
       video,
       faceDetector,
       startTimeMs,
     );
 
-    console.log(detections);
-    // const { detections } = objectDetector.detectForVideo(video, startTimeMs);
+    // check is detecting
+    if (!isDetecting && detection?.pose === FaceDetection.POSE.CENTER) {
+      centerCount += 1;
+      if (centerCount > 20) isDetecting = true;
+    }
+
+    // Start Get Sequence
+    if (isDetecting && !sequence) {
+      sequence = await getData('http://localhost:3002/get_sequence');
+      adviseText.innerHTML = sequence?.next_choice;
+
+      audioNotify.play();
+    } else if (
+      sequence?.status === 'processing' &&
+      sequence?.next_choice === detection?.pose
+    ) {
+      const image = takeSnapshot(video);
+
+      sequence = await postData('http://localhost:3002/liveness', {
+        image,
+        request_id: sequence.request_id,
+      });
+
+      adviseText.innerHTML = sequence?.next_choice;
+
+      audioNotify.play();
+    } else if (sequence?.status === 'completed' && sequence?.result === 'Yes') {
+      adviseText.innerHTML = sequence?.status;
+
+      audioNotify.play();
+
+      console.log(sequence);
+
+      isDetecting = false;
+
+      stream = video.srcObject;
+      tracks = stream.getTracks();
+      tracks.forEach(function (track) {
+        track.stop();
+      });
+    }
   }
 
   // Call this function again to keep predicting when the browser is ready
@@ -263,22 +229,26 @@ function takeSnapshot() {
   context = canvas.getContext('2d');
   context.drawImage(video, 0, 0, width, height);
 
+  return canvas
+    .toDataURL('image/jpeg')
+    .replace(/^data:image\/jpeg;base64,/, '');
+
   // polyfil if needed https://github.com/blueimp/JavaScript-Canvas-to-Blob
 
   // https://developers.google.com/web/fundamentals/primers/promises
   // https://stackoverflow.com/questions/42458849/access-blob-value-outside-of-canvas-toblob-async-function
-  function getCanvasBlob(canvas) {
-    return new Promise(function (resolve, reject) {
-      canvas.toBlob(function (blob) {
-        resolve(blob);
-      }, 'image/jpeg');
-    });
-  }
+  // function getCanvasBlob(canvas) {
+  //   return new Promise(function (resolve, reject) {
+  //     canvas.toBlob(function (blob) {
+  //       resolve(blob);
+  //     }, 'image/jpeg');
+  //   });
+  // }
 
-  // some API's (like Azure Custom Vision) need a blob with image data
-  getCanvasBlob(canvas).then(function (blob) {
-    // do something with the image blob
-  });
+  // // some API's (like Azure Custom Vision) need a blob with image data
+  // getCanvasBlob(canvas).then(function (blob) {
+  //   // do something with the image blob
+  // });
 }
 
 // https://hackernoon.com/how-to-use-javascript-closures-with-confidence-85cd1f841a6b

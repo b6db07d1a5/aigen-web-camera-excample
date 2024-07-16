@@ -15,31 +15,8 @@
     <link rel="stylesheet" type="text/css" href="style.css" />
   </head>
   <body>
-    <!-- <div id="container">
-      <div id="vid_container">
-        <video id="video" autoplay playsinline></video>
-        <div id="layout_overlay"></div>
-        <div id="video_overlay"></div>
-      </div>
-      <div id="gui_controls">
-        <span style="color: white" id="logger"></span>
-        <button
-          id="switchCameraButton"
-          name="switch Camera"
-          type="button"
-          aria-pressed="false"
-        ></button>
-        <button id="takePhotoButton" name="take Photo" type="button"></button>
-        <button
-          id="toggleFullScreenButton"
-          name="toggle FullScreen"
-          type="button"
-          aria-pressed="false"
-        ></button>
-      </div>
-    </div> -->
     <div class="invisible">
-      <div class="advise">{advise}</div>
+      <div class="advise" id="advise-text">Please Look Straight</div>
       <canvas id="canvas"></canvas>
 
       <div class="video-container">
@@ -51,6 +28,7 @@
     <script src="js/screenfull.min.js"></script>
     <script src="js/howler.core.min.js"></script>
     <script src="../../aigen-face-recognition-sdk/examples/browser/aigen-sdk.js"></script>
+    <script src="js/fetch.js"></script>
     <script src="js/main.js"></script>
   </body>
 </html>
