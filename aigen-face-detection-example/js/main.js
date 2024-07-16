@@ -1,16 +1,11 @@
 var video;
-var takePhotoButton;
-var toggleFullScreenButton;
-var switchCameraButton;
 var amountOfCameras = 0;
-var currentFacingMode = 'environment';
+var currentFacingMode = 'user';
 var faceDetector;
-var globalAngle = 0;
-var layoutOverlay;
 var isDetecting = false;
 
-let sequence;
-let adviseText;
+var sequence;
+var adviseText;
 
 const audioNotify = new Audio('./snd/notification-sound.wav');
 
@@ -137,7 +132,7 @@ async function initCameraStream() {
     window.stream = stream; // make stream available to browser console for detect RTC
     video.srcObject = stream;
 
-    //TODO ================================================
+    // Video Detecting
     video.addEventListener('loadeddata', predictWebcam);
 
     const track = window.stream.getVideoTracks()[0];
