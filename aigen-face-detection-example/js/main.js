@@ -250,34 +250,3 @@ function takeSnapshot() {
   //   // do something with the image blob
   // });
 }
-
-// https://hackernoon.com/how-to-use-javascript-closures-with-confidence-85cd1f841a6b
-// closure; store this in a variable and call the variable as function
-// eg. var takeSnapshotUI = createClickFeedbackUI();
-// takeSnapshotUI();
-
-function createClickFeedbackUI() {
-  // in order to give feedback that we actually pressed a button.
-  // we trigger a almost black overlay
-  var overlay = document.getElementById('video_overlay'); //.style.display;
-
-  // sound feedback
-  var sndClick = new Howl({ src: ['snd/click.mp3'] });
-
-  var overlayVisibility = false;
-  var timeOut = 80;
-
-  function setFalseAgain() {
-    overlayVisibility = false;
-    overlay.style.display = 'none';
-  }
-
-  return function () {
-    if (overlayVisibility == false) {
-      sndClick.play();
-      overlayVisibility = true;
-      overlay.style.display = 'block';
-      setTimeout(setFalseAgain, timeOut);
-    }
-  };
-}
