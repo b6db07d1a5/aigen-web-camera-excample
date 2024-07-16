@@ -15,7 +15,7 @@
     <link rel="stylesheet" type="text/css" href="style.css" />
   </head>
   <body>
-    <div id="container">
+    <!-- <div id="container">
       <div id="vid_container">
         <video id="video" autoplay playsinline></video>
         <div id="layout_overlay"></div>
@@ -37,11 +37,20 @@
           aria-pressed="false"
         ></button>
       </div>
+    </div> -->
+    <div class="invisible">
+      <div class="advise">{advise}</div>
+      <canvas id="canvas"></canvas>
+
+      <div class="video-container">
+        <video id="video" autoplay playsinline muted></video>
+        <canvas class="canv"></canvas>
+      </div>
     </div>
     <script src="js/adapter.min.js"></script>
     <script src="js/screenfull.min.js"></script>
     <script src="js/howler.core.min.js"></script>
-    <script src="D:/Workspace/AIGen/git/aigen-face-recognition-sdk/src/index.js"></script>
+    <script src="../../aigen-face-recognition-sdk/examples/browser/aigen-sdk.js"></script>
     <script src="js/main.js"></script>
   </body>
 </html>

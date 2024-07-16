@@ -6,9 +6,11 @@ var toggleFullScreenButton;
 var switchCameraButton;
 var amountOfCameras = 0;
 var currentFacingMode = 'environment';
-var objectDetector;
+var faceDetector;
 var globalAngle = 0;
 var layoutOverlay;
+
+const { FaceDetection } = new aigenSDK();
 
 // this function counts the amount of video inputs
 // it replaces DetectRTC that was previously implemented.
@@ -85,48 +87,48 @@ document.addEventListener('DOMContentLoaded', function (event) {
 function initCameraUI() {
   video = document.getElementById('video');
 
-  takePhotoButton = document.getElementById('takePhotoButton');
-  toggleFullScreenButton = document.getElementById('toggleFullScreenButton');
-  switchCameraButton = document.getElementById('switchCameraButton');
-  layoutOverlay = document.getElementById('layout_overlay');
+  // takePhotoButton = document.getElementById('takePhotoButton');
+  // toggleFullScreenButton = document.getElementById('toggleFullScreenButton');
+  // switchCameraButton = document.getElementById('switchCameraButton');
+  // layoutOverlay = document.getElementById('layout_overlay');
 
   // https://developer.mozilla.org/nl/docs/Web/HTML/Element/button
   // https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/ARIA_Techniques/Using_the_button_role
 
-  takePhotoButton.addEventListener('click', function () {
-    takeSnapshotUI();
-    takeSnapshot();
-  });
+  // takePhotoButton.addEventListener('click', function () {
+  //   takeSnapshotUI();
+  //   takeSnapshot();
+  // });
 
   // -- fullscreen part
 
-  function fullScreenChange() {
-    if (screenfull.isFullscreen) {
-      toggleFullScreenButton.setAttribute('aria-pressed', true);
-    } else {
-      toggleFullScreenButton.setAttribute('aria-pressed', false);
-    }
-  }
+  // function fullScreenChange() {
+  //   if (screenfull.isFullscreen) {
+  //     toggleFullScreenButton.setAttribute('aria-pressed', true);
+  //   } else {
+  //     toggleFullScreenButton.setAttribute('aria-pressed', false);
+  //   }
+  // }
 
-  if (screenfull.isEnabled) {
-    screenfull.on('change', fullScreenChange);
+  // if (screenfull.isEnabled) {
+  //   screenfull.on('change', fullScreenChange);
 
-    toggleFullScreenButton.style.display = 'block';
+  //   toggleFullScreenButton.style.display = 'block';
 
-    // set init values
-    fullScreenChange();
+  //   // set init values
+  //   fullScreenChange();
 
-    toggleFullScreenButton.addEventListener('click', function () {
-      screenfull.toggle(document.getElementById('container')).then(function () {
-        console.log(
-          'Fullscreen mode: ' +
-            (screenfull.isFullscreen ? 'enabled' : 'disabled'),
-        );
-      });
-    });
-  } else {
-    console.log("iOS doesn't support fullscreen (yet)");
-  }
+  //   toggleFullScreenButton.addEventListener('click', function () {
+  //     screenfull.toggle(document.getElementById('container')).then(function () {
+  //       console.log(
+  //         'Fullscreen mode: ' +
+  //           (screenfull.isFullscreen ? 'enabled' : 'disabled'),
+  //       );
+  //     });
+  //   });
+  // } else {
+  //   console.log("iOS doesn't support fullscreen (yet)");
+  // }
 
   // -- switch camera part
   if (amountOfCameras > 1) {
@@ -144,34 +146,34 @@ function initCameraUI() {
   // physical (and virtual) buttons (opposite of camera) most of the layout change is done by CSS media queries
   // https://www.sitepoint.com/introducing-screen-orientation-api/
   // https://developer.mozilla.org/en-US/docs/Web/API/Screen/orientation
-  window.addEventListener(
-    'orientationchange',
-    function () {
-      // iOS doesn't have screen.orientation, so fallback to window.orientation.
-      // screen.orientation will
-      if (screen.orientation) angle = screen.orientation.angle;
-      else angle = window.orientation;
+  // window.addEventListener(
+  //   'orientationchange',
+  //   function () {
+  //     // iOS doesn't have screen.orientation, so fallback to window.orientation.
+  //     // screen.orientation will
+  //     if (screen.orientation) angle = screen.orientation.angle;
+  //     else angle = window.orientation;
 
-      var guiControls = document.getElementById('gui_controls').classList;
-      var vidContainer = document.getElementById('vid_container').classList;
+  //     var guiControls = document.getElementById('gui_controls').classList;
+  //     var vidContainer = document.getElementById('vid_container').classList;
 
-      if (angle == 270 || angle == -90) {
-        guiControls.add('left');
-        vidContainer.add('left');
-      } else {
-        if (guiControls.contains('left')) guiControls.remove('left');
-        if (vidContainer.contains('left')) vidContainer.remove('left');
-      }
+  //     if (angle == 270 || angle == -90) {
+  //       guiControls.add('left');
+  //       vidContainer.add('left');
+  //     } else {
+  //       if (guiControls.contains('left')) guiControls.remove('left');
+  //       if (vidContainer.contains('left')) vidContainer.remove('left');
+  //     }
 
-      globalAngle = angle;
+  //     globalAngle = angle;
 
-      //0   portrait-primary
-      //180 portrait-secondary device is down under
-      //90  landscape-primary  buttons at the right
-      //270 landscape-secondary buttons at the left
-    },
-    false,
-  );
+  //     //0   portrait-primary
+  //     //180 portrait-secondary device is down under
+  //     //90  landscape-primary  buttons at the right
+  //     //270 landscape-secondary buttons at the left
+  //   },
+  //   false,
+  // );
 }
 
 // https://github.com/webrtc/samples/blob/gh-pages/src/content/devices/input-output/js/main.js
@@ -197,12 +199,10 @@ async function initCameraStream() {
     },
   };
 
-  if (screen.orientation) globalAngle = screen.orientation.angle;
-  else globalAngle = window.orientation;
+  // if (screen.orientation) globalAngle = screen.orientation.angle;
+  // else globalAngle = window.orientation;
 
-  const { ObjectDetection } = new AIGEN();
-
-  objectDetector = await ObjectDetection.initializeObjectDetector();
+  faceDetector = await FaceDetection.initializeFaceDetector();
 
   navigator.mediaDevices
     .getUserMedia(constraints)
@@ -213,15 +213,8 @@ async function initCameraStream() {
     window.stream = stream; // make stream available to browser console for detect RTC
     video.srcObject = stream;
 
-    video.addEventListener('loadeddata', predictWebcam);
-
-    if (constraints.video.facingMode) {
-      if (constraints.video.facingMode === 'environment') {
-        switchCameraButton.setAttribute('aria-pressed', true);
-      } else {
-        switchCameraButton.setAttribute('aria-pressed', false);
-      }
-    }
+    //TODO
+    // video.addEventListener('loadeddata', predictWebcam);
 
     const track = window.stream.getVideoTracks()[0];
     const settings = track.getSettings();
@@ -236,30 +229,21 @@ async function initCameraStream() {
 
 let lastVideoTime = -1;
 
-var logger = document.getElementById('logger');
-
 async function predictWebcam() {
   let startTimeMs = performance.now();
 
-  // Detect objects using detectForVideo.
+  // Detect using detectForVideo.
   if (video.currentTime !== lastVideoTime) {
     lastVideoTime = video.currentTime;
-    const { detections } = objectDetector.detectForVideo(video, startTimeMs);
 
-    if (detections.length === 1) {
-      const { originX, originY, width, height } = detections[0].boundingBox;
+    const detections = FaceDetection.detectForVideo(
+      video,
+      faceDetector,
+      startTimeMs,
+    );
 
-      logger.innerHTML = width;
-
-      if (globalAngle === 90 && width > 900 && width < 1100) {
-        layoutOverlay.classList.add('pass');
-      } else if (globalAngle === 0 && width > 600 && width < 700) {
-        layoutOverlay.classList.add('pass');
-      }
-    } else {
-      layoutOverlay.classList.remove('pass');
-      layoutOverlay.classList.add('not-pass');
-    }
+    console.log(detections);
+    // const { detections } = objectDetector.detectForVideo(video, startTimeMs);
   }
 
   // Call this function again to keep predicting when the browser is ready
