@@ -153,6 +153,14 @@ async function predictWebcam() {
     );
 
     // 0. Check Center Face count to 10 Frame and continue do liveness
+
+    // POSE constraint
+    // LEFT: 'Turn_left'
+    // RIGHT: 'Turn_right'
+    // UP: 'Look_up'
+    // DOWN: 'Look_down'
+    // CENTER: 'Center'
+
     if (!isDetecting && detection?.pose === FaceDetection.POSE.CENTER) {
       centerCount += 1;
       if (centerCount > 20) isDetecting = true;
