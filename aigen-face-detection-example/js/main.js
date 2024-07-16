@@ -1,5 +1,3 @@
-var takeSnapshotUI = createClickFeedbackUI();
-
 var video;
 var takePhotoButton;
 var toggleFullScreenButton;
