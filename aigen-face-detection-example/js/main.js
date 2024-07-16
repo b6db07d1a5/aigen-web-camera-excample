@@ -109,6 +109,7 @@ async function initCameraStream() {
     },
   };
 
+  //A. initial detaction instance
   faceDetector = await FaceDetection.initializeFaceDetector();
 
   navigator.mediaDevices
@@ -144,13 +145,14 @@ async function predictWebcam() {
   if (video.currentTime !== lastVideoTime) {
     lastVideoTime = video.currentTime;
 
+    //B. processing video instance
     const detection = FaceDetection.detectForVideo(
       video,
       faceDetector,
       startTimeMs,
     );
 
-    // check is detecting
+    // 0. Check Center Face count to 10 Frame and continue do liveness
     if (!isDetecting && detection?.pose === FaceDetection.POSE.CENTER) {
       centerCount += 1;
       if (centerCount > 20) isDetecting = true;
@@ -159,6 +161,8 @@ async function predictWebcam() {
     if (isDetecting && !sequence) {
       // 1. Start Get Sequence
 
+      // GET https://apis.aigen.online/aiface/liveness-detection/v1
+      // https://docs.aigen.online/documents/v/v1/api-reference/aiface/liveness-detection
       sequence = await getData('http://localhost:3002/get_sequence');
       adviseText.innerHTML = sequence?.next_choice;
 
@@ -168,6 +172,9 @@ async function predictWebcam() {
       sequence?.next_choice === detection?.pose
     ) {
       // 2. Processing image
+
+      // POST https://apis.aigen.online/aiface/liveness-detection/v1
+      // https://docs.aigen.online/documents/v/v1/api-reference/aiface/liveness-detection
 
       const image = takeSnapshot(video);
 
@@ -190,6 +197,7 @@ async function predictWebcam() {
 
       console.log(sequence);
 
+      // 4. Stop Detection
       isDetecting = false;
 
       stream = video.srcObject;
