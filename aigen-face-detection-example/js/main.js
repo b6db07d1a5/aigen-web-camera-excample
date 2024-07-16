@@ -86,18 +86,6 @@ document.addEventListener('DOMContentLoaded', function (event) {
 function initCameraUI() {
   video = document.getElementById('video');
   adviseText = document.getElementById('advise-text');
-
-  // -- switch camera part
-  if (amountOfCameras > 1) {
-    switchCameraButton.style.display = 'block';
-
-    switchCameraButton.addEventListener('click', function () {
-      if (currentFacingMode === 'environment') currentFacingMode = 'user';
-      else currentFacingMode = 'environment';
-
-      initCameraStream();
-    });
-  }
 }
 
 // https://github.com/webrtc/samples/blob/gh-pages/src/content/devices/input-output/js/main.js
@@ -168,8 +156,9 @@ async function predictWebcam() {
       if (centerCount > 20) isDetecting = true;
     }
 
-    // Start Get Sequence
     if (isDetecting && !sequence) {
+      // 1. Start Get Sequence
+
       sequence = await getData('http://localhost:3002/get_sequence');
       adviseText.innerHTML = sequence?.next_choice;
 
@@ -178,6 +167,8 @@ async function predictWebcam() {
       sequence?.status === 'processing' &&
       sequence?.next_choice === detection?.pose
     ) {
+      // 2. Processing image
+
       const image = takeSnapshot(video);
 
       sequence = await postData('http://localhost:3002/liveness', {
@@ -188,7 +179,11 @@ async function predictWebcam() {
       adviseText.innerHTML = sequence?.next_choice;
 
       audioNotify.play();
-    } else if (sequence?.status === 'completed' && sequence?.result === 'Yes') {
+    } else if (
+      sequence?.status === 'completed' ||
+      sequence?.status === 'uncompleted'
+    ) {
+      // 3. Verify Complete or Not
       adviseText.innerHTML = sequence?.status;
 
       audioNotify.play();
@@ -225,21 +220,4 @@ function takeSnapshot() {
   return canvas
     .toDataURL('image/jpeg')
     .replace(/^data:image\/jpeg;base64,/, '');
-
-  // polyfil if needed https://github.com/blueimp/JavaScript-Canvas-to-Blob
-
-  // https://developers.google.com/web/fundamentals/primers/promises
-  // https://stackoverflow.com/questions/42458849/access-blob-value-outside-of-canvas-toblob-async-function
-  // function getCanvasBlob(canvas) {
-  //   return new Promise(function (resolve, reject) {
-  //     canvas.toBlob(function (blob) {
-  //       resolve(blob);
-  //     }, 'image/jpeg');
-  //   });
-  // }
-
-  // // some API's (like Azure Custom Vision) need a blob with image data
-  // getCanvasBlob(canvas).then(function (blob) {
-  //   // do something with the image blob
-  // });
 }
