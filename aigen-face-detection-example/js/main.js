@@ -172,7 +172,7 @@ async function predictWebcam() {
       // GET https://apis.aigen.online/aiface/liveness-detection/v1
       // https://docs.aigen.online/documents/v/v1/api-reference/aiface/liveness-detection
       sequence = await getData(
-        'https://apis.aigen.online/aiface/liveness-detection/v1?mode=3&part=face&select=Turn_right&select=Turn_left&select=Look_up',
+        'https://apis.aigen.online/aiface/liveness-detection/v1?mode=2&part=face&select=Turn_right&select=Turn_left',
       );
       adviseText.innerHTML = sequence?.next_choice;
 

@@ -1,4 +1,5 @@
-const API_KEY = 'AG67g3rt6114h1szew865vr2z7r6vh0to9';
+// https://developer.aigen.online/
+const API_KEY = 'AGxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
 
 function request(url, params = {}, method = 'GET') {
   let options = {
