@@ -1,5 +1,5 @@
 // https://developer.aigen.online/
-const API_KEY = 'AGxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
+const API_KEY = 'AGxxxxx';
 
 function request(url, params = {}, method = 'GET') {
   let options = {
@@ -11,10 +11,12 @@ function request(url, params = {}, method = 'GET') {
   };
 
   if ('GET' === method) {
-    url += '?' + new URLSearchParams(params).toString();
+    url += new URLSearchParams(params).toString();
   } else {
     options.body = JSON.stringify(params);
   }
+
+  console.log(url);
 
   const result = fetch(url, options).then((response) => response.json());
 
