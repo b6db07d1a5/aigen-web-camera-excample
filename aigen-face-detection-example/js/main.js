@@ -171,9 +171,11 @@ async function predictWebcam() {
 
       // GET https://apis.aigen.online/aiface/liveness-detection/v1
       // https://docs.aigen.online/documents/v/v1/api-reference/aiface/liveness-detection
-      sequence = await getData(
-        'https://apis.aigen.online/aiface/liveness-detection/v1?mode=3&part=face&select=Turn_right&select=Turn_left&select=Look_up',
-      );
+
+      const urlSequence = 'https://app-uat.aigen.online/ekyc/api/get_sequence';
+      // const urlSequence = 'https://apis.aigen.online/aiface/liveness-detection/v1?mode=3&part=face&select=Turn_right&select=Turn_left&select=Look_up';
+
+      sequence = await getData(urlSequence);
       adviseText.innerHTML = sequence?.next_choice;
 
       audioNotify.play();
@@ -188,13 +190,14 @@ async function predictWebcam() {
 
       const image = takeSnapshot(video);
 
-      sequence = await postData(
-        'https://apis.aigen.online/aiface/liveness-detection/v1',
-        {
-          image,
-          request_id: sequence.request_id,
-        },
-      );
+      const urlLivenessCheck =
+        'https://app-uat.aigen.online/ekyc/api/get_sequence';
+      // const urlLivenessCheck = 'https://apis.aigen.online/aiface/liveness-detection/v1'
+
+      sequence = await postData(urlLivenessCheck, {
+        image,
+        request_id: sequence.request_id,
+      });
 
       adviseText.innerHTML = sequence?.next_choice;
 
