@@ -190,8 +190,7 @@ async function predictWebcam() {
 
       const image = takeSnapshot(video);
 
-      const urlLivenessCheck =
-        'https://app-uat.aigen.online/ekyc/api/get_sequence';
+      const urlLivenessCheck = 'https://app-uat.aigen.online/ekyc/api/liveness';
       // const urlLivenessCheck = 'https://apis.aigen.online/aiface/liveness-detection/v1'
 
       sequence = await postData(urlLivenessCheck, {
